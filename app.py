@@ -125,13 +125,7 @@ with tab1:
         
         # Display password
         st.markdown("#### 🔑 Password yang Dihasilkan:")
-        
-        col_pwd, col_copy = st.columns([4, 1])
-        with col_pwd:
-            st.code(pwd, language="text")
-        with col_copy:
-            if st.button("📋 Copy", use_container_width=True):
-                st.success("✅ Password di-copy!")
+        st.code(pwd, language="text")
         
         # Display rules
         st.markdown("#### 📋 Aturan yang Digunakan:")
@@ -141,17 +135,43 @@ with tab1:
         st.markdown(f"#### 📏 Informasi Panjang:")
         st.write(f"Panjang: **{len(pwd)} karakter**")
         
+        # Strength analysis
+        st.markdown("---")
+        st.markdown("#### 📊 Analisis Kekuatan:")
+        result = check_password_strength(pwd)
+        
+        strength = result['strength']
+        score = result['score']
+        emoji = get_strength_emoji(strength)
+        
+        col_s1, col_s2 = st.columns(2)
+        with col_s1:
+            st.metric("Level", f"{emoji} {strength.value}")
+        with col_s2:
+            st.metric("Skor", f"{score}/100")
+        
+        st.progress(score / 100, text=f"{score}% Kuat")
+        
         # Generate more options
         st.markdown("---")
         st.markdown("#### 🔄 Opsi Lainnya:")
         
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         
         with col1:
             if st.button("🎲 Generate Ulang", use_container_width=True):
                 st.rerun()
         
         with col2:
+            if st.button("💾 Simpan ke File", use_container_width=True, type="primary"):
+                try:
+                    filepath = export_to_file(pwd, result, rules_summary)
+                    st.success(f"✅ File berhasil disimpan!")
+                    st.info(f"📁 {filepath}")
+                except IOError as e:
+                    st.error(f"❌ Gagal menyimpan: {str(e)}")
+        
+        with col3:
             if st.button("➕ Lanjut ke Strength Check", use_container_width=True):
                 st.session_state.check_strength = True
                 st.rerun()
